@@ -4,7 +4,7 @@ module rptr_handler #(
     input rclk,
     input read_en,
     input r_rst,
-    input [$clog2(DEPTH):0] g_rptr_sync, // depth bit + 1 msb bit 
+    input [$clog2(DEPTH):0] g_wptr_sync, // depth bit + 1 msb bit 
 
     output reg [$clog2(DEPTH):0] g_rptr,
     output reg empty,
@@ -12,7 +12,7 @@ module rptr_handler #(
 
 );
 
-wire wempty;
+wire rempty;
 
 reg [$clog2(DEPTH):0] b_rptr; 
 
@@ -28,7 +28,7 @@ assign g_rptr_next = (b_rptr_next >> 1) ^ b_rptr_next; // conversion of binary t
 
 assign r_addr = b_rptr[$clog2(DEPTH)-1:0]; // addr sent to mem just the lower bits
 
-  assign wempty = (g_rptr_next == g_wr_ptr_sync);
+  assign rempty = (g_rptr_next == g_wptr_sync);
 
 
 always @(posedge rclk or negedge r_rst) begin
@@ -37,14 +37,14 @@ always @(posedge rclk or negedge r_rst) begin
     begin
         b_rptr <= 0;
         g_rptr <= 0;
-        empty <= 0;
+        empty <= 1;
 
     end
     else 
     begin
         b_rptr <= b_rptr_next;
         g_rptr <= g_rptr_next;
-        empty <= wempty;
+        empty <= rempty;
     end
 
 

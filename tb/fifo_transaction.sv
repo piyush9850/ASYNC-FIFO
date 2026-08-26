@@ -43,13 +43,4 @@ function new();
 
 
 endfunction
-
-
-
-
-
-
-
-
-
 endclass

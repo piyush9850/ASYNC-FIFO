@@ -55,24 +55,6 @@ rclk = ~rclk;
 end
 end
 
-initial begin  // reset condition
-    
-    w_rst = 0;
-    r_rst = 0;
-
-    write_en = 0;
-    read_en = 0;
-
-    data_in = 0;
-
-    #50;
-
-    w_rst = 1;
-    r_rst = 1;
-
-
-end
-
 task automatic write_byte(input logic [WIDTH-1:0] val);  // write task
 
 @(posedge wclk);
@@ -93,6 +75,80 @@ end
 
 endtask
 
+
+task automatic read_byte();
+
+logic [WIDTH-1:0] expected_val;
+
+logic did_read;
+
+@(posedge rclk)
+did_read = !empty;
+if(did_read)
+read_en = 1;
+
+@(posedge rclk)
+read_en = 0;
+
+if(did_read) begin
+expected_val = expected_q.pop_front();
+if(data_out !== expected_val)
+$display("T =%0t MISMATCH got= %0h expected= %0h",$time,data_out,expected_val);
+else
+ $display("T=%0t MATCH   got=%0h", $time, data_out);
+
+end
+
+endtask
+
+
+
+
+
+initial begin  // reset condition
+    
+      $dumpfile("async_fifo.vcd");
+    $dumpvars(0, tb);
+
+    w_rst = 0;
+    r_rst = 0;
+
+    write_en = 0;
+    read_en = 0;
+
+    data_in = 0;
+
+    #50;
+
+    w_rst = 1;
+    r_rst = 1;
+
+#20;
+
+for(int i = 0;i< DEPTH; i++)
+write_byte(i);
+
+for(int i = 0;i< DEPTH;i++)
+read_byte();
+
+fork
+    begin
+        for(int i = 0; i< 20; i++)
+        write_byte(i+100);
+    end
+    begin
+        for(int i = 0; i< 20; i++)
+        read_byte();
+    end
+
+
+join
+
+#100;
+$display("Test complete");
+$finish;
+
+end
 
 
 

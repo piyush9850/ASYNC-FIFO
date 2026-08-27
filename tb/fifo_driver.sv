@@ -26,40 +26,28 @@ forever begin
     gen2drv.get(tr);
 
     fork
-        begin
-            // write side
-            if(tr.write_en) begin
-                @(posedge vif.wclk);
-                vif.write_en = 1;
-                vif.read_en = 0;
-                vif.data_in = tr.write_data;
+        // WRITE
+if(tr.write_en) begin
+    @(posedge vif.wclk);
+    vif.write_en = 1;
+    vif.data_in  = tr.write_data;
 
-                @(posedge vif.wclk);
-                vif.write_en = 0;
-            end
+    @(posedge vif.wclk);
+    vif.write_en = 0;
 end
-            // read side
 
-             begin
-                if (tr.read_en) begin
-                    @(posedge vif.rclk);
-                    vif.read_en = 1;
-                    @(posedge vif.rclk);
-                    vif.read_en = 0;
-                end
-            end
+// READ
+if(tr.read_en) begin
+    @(posedge vif.rclk);
+    vif.read_en = 1;
 
-
-        
+    @(posedge vif.rclk);
+    vif.read_en = 0;
+end
 
     join
 
-
-
-
 end
-
-
 
 endtask
 
